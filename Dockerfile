@@ -2,39 +2,21 @@ FROM --platform=linux/amd64 ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-
-RUN apt update -y && apt install -y software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt update -y && apt install -y \
+RUN apt update && apt install -y \
     openssh-server \
     sudo \
-    vim \
-    net-tools \
-    curl \
-    wget \
-    git \
-    tzdata \
-    ffmpeg \
-    python3.11 \
-    python3.11-dev \
-    python3.11-distutils \
-    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+RUN mkdir /var/run/sshd
 
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 && \
-    python3.11 -m pip install --upgrade pip setuptools wheel
+RUN echo "root:123456" | chpasswd
 
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
-RUN python3.11 -m pip install --no-cache-dir \
-    mtranslate \
-    google-genai \
-    requests \
-    g4f \
-    mutagen \
-    tgcalls==3.0.0.dev6 \
-    git+https://github.com/pytgcalls/pytgcalls.git@dev \
-    telethon \
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd", "-D"]    telethon \
     aiocron \
     emoji \
     pytz \
